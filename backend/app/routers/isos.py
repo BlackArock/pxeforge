@@ -124,18 +124,20 @@ async def upload_iso(
         raise HTTPException(status_code=400, detail="File must be an ISO image")
 
     filepath = ISOS_DIR / filename
-    content = await file.read()
-    with open(filepath, "wb") as f:
-        f.write(content)
 
-    checksum = hashlib.sha256(content).hexdigest()
-    size = len(content)
+    checksum = hashlib.sha256()
+    size = 0
+    with open(filepath, "wb") as f:
+        while chunk := await file.read(1024 * 1024):
+            f.write(chunk)
+            checksum.update(chunk)
+            size += len(chunk)
 
     iso = ISOImage(
         filename=filename,
         os_name=filename.replace(".iso", ""),
         size_bytes=size,
-        checksum=checksum,
+        checksum=checksum.hexdigest(),
         status="available",
         progress=100.0,
     )
