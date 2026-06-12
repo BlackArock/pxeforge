@@ -8,15 +8,28 @@
 
 **PXEForge** es un appliance todo-en-uno para bootear máquinas por red usando PXE. Levanta iVentoy, un backend FastAPI con panel React, aria2 para descargas, Samba para compartir ISOs por red, y nginx como reverse proxy — todo orquestado con Docker Compose.
 
+Categorizá ISOs entre **OS** y **Tools**, agregales notas, ocultálas del menú PXE, y gestioná todo desde una UI reactiva.
+
 ## Características
 
 - **Catálogo de ISOs** — Subí, descargá (URL o Torrent), o agregá distros preconfiguradas (Ubuntu, Debian, Clonezilla, GParted, Proxmox) con un click
+- **Tools & Notes** — Categorizá ISOs como OS o Tool, agregales notas descriptivas, y editalas desde un modal
 - **Boot Menu Manager** — Reordená y ocultá ISOs del menú PXE fácilmente
 - **Dashboard** — Estado de iVentoy, uso de disco, actividad reciente en tiempo real
 - **Clientes PXE** — Detecta y lista máquinas que bootearon por red
 - **Samba Share** — Accedé a los ISOs desde cualquier máquina de la red (Windows/Linux)
 - **Backups** — Exportá la configuración del appliance en ZIP
 - **Auditoría** — Log de todas las acciones con detalle
+
+## Screenshots
+
+| ISOs | Tools |
+|------|-------|
+| ![ISOs page](screenshots/isos-page.png) | ![Tools page](screenshots/tools-page.png) |
+
+| Boot Menu | Edit Notes |
+|-----------|------------|
+| ![Boot menu](screenshots/boot-menu.png) | ![Edit notes modal](screenshots/edit-notes.png) |
 
 ## Stack
 

@@ -3,6 +3,7 @@ import Layout from './components/Layout'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'
 import ISOs from './components/ISOs'
+import Tools from './components/Tools'
 import BootMenu from './components/BootMenu'
 import Clients from './components/Clients'
 import Backups from './components/Backups'
@@ -28,6 +29,7 @@ export default function App() {
       >
         <Route index element={<Dashboard />} />
         <Route path="isos" element={<ISOs />} />
+        <Route path="tools" element={<Tools />} />
         <Route path="boot-menu" element={<BootMenu />} />
         <Route path="clients" element={<Clients />} />
         <Route path="backups" element={<Backups />} />

@@ -26,10 +26,17 @@ class ISOImageResponse(BaseModel):
     progress: float
     display_order: int = 0
     enabled: bool = True
+    category: str = "os"
+    notes: Optional[str] = None
     created_at: datetime
 
     class Config:
         from_attributes = True
+
+
+class UpdateISORequest(BaseModel):
+    notes: Optional[str] = None
+    category: Optional[str] = None
 
 
 class ReorderRequest(BaseModel):

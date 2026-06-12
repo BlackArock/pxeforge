@@ -19,6 +19,8 @@ class ISOImage(Base):
     progress = Column(Float, default=100.0)
     display_order = Column(Integer, default=0)
     enabled = Column(Integer, default=1)
+    category = Column(String(50), default="os")
+    notes = Column(Text)
     created_at = Column(DateTime, default=datetime.now)
 
 

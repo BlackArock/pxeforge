@@ -43,8 +43,17 @@ export const api = {
     return request('/dashboard')
   },
 
-  async getISOs() {
-    return request('/isos')
+  async getISOs(category) {
+    const qs = category ? `?category=${category}` : ''
+    return request(`/isos${qs}`)
+  },
+
+  async updateISO(id, data) {
+    return request(`/isos/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
   },
 
   async getPreloaded() {

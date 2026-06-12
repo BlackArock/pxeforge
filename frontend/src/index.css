@@ -132,6 +132,7 @@ td {
 .badge-warning { background: rgba(245,158,11,0.15); color: var(--warning); }
 .badge-danger { background: rgba(239,68,68,0.15); color: var(--danger); }
 .badge-info { background: rgba(99,102,241,0.15); color: var(--accent); }
+.badge-neutral { background: rgba(156,163,175,0.15); color: var(--text-dim); }
 
 .btn-primary { background: var(--accent); color: white; }
 .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }

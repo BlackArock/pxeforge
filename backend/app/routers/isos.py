@@ -9,7 +9,7 @@ from ..auth import get_current_user
 from ..config import DISABLED_DIR, ISOS_DIR, PRELOADED_ISOS
 from ..database import get_db
 from ..models import AuditLog, Download, ISOImage
-from ..schemas import DownloadResponse, ISOImageResponse, ReorderRequest
+from ..schemas import DownloadResponse, ISOImageResponse, ReorderRequest, UpdateISORequest
 from ..services.download_service import list_enriched_downloads, start_download
 from ..services.iventoy import IventoyClient
 
@@ -22,9 +22,12 @@ def _log_audit(db: Session, username: str, action: str, details: str = None, ip:
 
 
 @router.get("", response_model=list[ISOImageResponse])
-def list_isos(db: Session = Depends(get_db)):
+def list_isos(category: str = None, db: Session = Depends(get_db)):
     _reconcile_isos(db)
-    return db.query(ISOImage).order_by(ISOImage.created_at.desc()).all()
+    q = db.query(ISOImage)
+    if category:
+        q = q.filter(ISOImage.category == category)
+    return q.order_by(ISOImage.created_at.desc()).all()
 
 
 def _reconcile_isos(db: Session):
@@ -197,6 +200,21 @@ def download_preloaded(
     download = start_download(db, url, filename)
     _log_audit(db, user, "download_preloaded", f"Started preloaded: {name}", request.client.host)
     return {"download_id": download.id, "filename": filename}
+
+
+@router.patch("/{iso_id}", response_model=ISOImageResponse)
+def update_iso(iso_id: int, body: UpdateISORequest, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    iso = db.query(ISOImage).filter(ISOImage.id == iso_id).first()
+    if not iso:
+        raise HTTPException(status_code=404, detail="ISO not found")
+    if body.notes is not None:
+        iso.notes = body.notes
+    if body.category is not None:
+        iso.category = body.category
+    _log_audit(db, user, "update_iso", f"Updated ISO: {iso.filename} — notes={'changed' if body.notes is not None else 'unchanged'}, category={'changed' if body.category is not None else 'unchanged'}", request.client.host)
+    db.commit()
+    return ISOImageResponse.model_validate(iso)
 
 
 @router.put("/{iso_id}/toggle")

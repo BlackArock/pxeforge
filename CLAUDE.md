@@ -30,7 +30,8 @@ data/ → /mnt/Storage/pxeforge-data (symlink)
 ├── configs/        # iVentoy config + aria2 config
 ├── logs/iventoy/   # Logs de iVentoy
 ├── backups/        # Backups ZIP de configuración
-└── pxeforge.db     # SQLite database
+├── pxeforge.db     # SQLite database
+└── screenshots/    # README screenshots (PNG)
 ```
 
 ## Servicios
@@ -83,13 +84,13 @@ Since iVentoy has no documented REST API to toggle ISO visibility, we use the fi
 
 ## Database (SQLite, sin migrations automáticas)
 
-- `iso_images` — ISO registrados con `display_order` (Integer) y `enabled` (Integer 0/1)
+- `iso_images` — ISO registrados con `display_order` (Integer), `enabled` (Integer 0/1), `category` (String, "os" | "tool"), `notes` (Text, nullable)
 - `boot_clients` — clientes PXE detectados, únicos por MAC
 - `downloads` — descargas aria2 con `aria2_gid`
 - `audit_logs` — registro de acciones
 - `backups` — backups ZIP generados
 
-Si se agregan columnas nuevas, hay que eliminar la DB o agregar ALTER TABLE manual.
+Si se agregan columnas nuevas, `_apply_migrations()` en `database.py` corre ALTER TABLE automáticamente (usa PRAGMA table_info para detectar columnas faltantes). No requiere borrar la DB.
 
 ## Credenciales (todo en .env)
 
@@ -138,18 +139,19 @@ iVentoy guarda DHCP config en `data/configs/config.dat`. Si `AUTO_START_PXE=true
 - `DELETE /api/logs` — Clear all audit logs
 
 ### ISOs
-- `GET /api/isos` — Listar + reconciliar
+- `GET /api/isos` — Listar + reconciliar (opcional `?category=os|tool`)
 - `GET /api/isos/preloaded` — Preloaded distros
 - `GET /api/isos/downloads` — Descargas en curso/completadas
 - `DELETE /api/isos/downloads` — Limpiar descargas completadas/error
 - `DELETE /api/isos/downloads/{id}` — Eliminar una descarga
 - `DELETE /api/isos/{iso_id}` — Eliminar ISO (file + DB + iVentoy)
-- `POST /api/isos/upload` — Subir ISO (multipart)
+- `POST /api/isos/upload` — Subir ISO (multipart, streaming 1MB chunks)
 - `POST /api/isos/download?url=` — Descargar desde URL
 - `POST /api/isos/download-torrent?magnet=` — Torrent
 - `POST /api/isos/download-preloaded?name=` — Quick add
 - `GET /api/isos/{iso_id}/download` — Descargar ISO file
 - `PUT /api/isos/{iso_id}/toggle` — Habilitar/deshabilitar
+- `PATCH /api/isos/{iso_id}` — Actualizar notes + category
 - `PUT /api/isos/reorder` — Batch update display_order
 
 ### Clients
@@ -189,8 +191,10 @@ docker compose up -d --build frontend
 3. **iVentoy no tiene REST API completa** — ISO hiding es filesystem, no API
 4. **aria2 dedup** — `.1.iso`, `.2.iso` variants al descargar duplicados
 5. **No hay migrations** — SQLite schema debe mantenerse a mano (ALTER TABLE o delete DB)
-6. **AUTO_START_PXE=false** — necesario hasta configurar DHCP manualmente
-7. **`_disabled/`** se crea automáticamente al toggle el primer ISO
-8. **Symlink `data/`** apunta a `/mnt/Storage/pxeforge-data` — no mover sin actualizar
-9. **JWT sin refresh token** — expira en 24h, hay que reloguear
-10. **nginx `client_max_body_size 0`** — permite uploads de ISOs grandes sin límite
+6. **`_apply_migrations()`** en `database.py` corre ALTER TABLE automáticamente (usa PRAGMA table_info para detectar columnas faltantes). No requiere borrar la DB. Agregar columnas nuevas ahí en vez de hacerlo manual.
+7. **Streaming uploads** — `while chunk := await file.read(1024 * 1024)` escribe en disco en chunks de 1MB con SHA-256 incremental. NO usar `await file.read()` — carga todo a RAM y mata el proceso con ISOs grandes (>2GB en host con poca RAM).
+8. **AUTO_START_PXE=false** — necesario hasta configurar DHCP manualmente
+9. **`_disabled/`** se crea automáticamente al toggle el primer ISO
+10. **Symlink `data/`** apunta a `/mnt/Storage/pxeforge-data` — no mover sin actualizar
+11. **JWT sin refresh token** — expira en 24h, hay que reloguear
+12. **nginx `client_max_body_size 0`** — permite uploads de ISOs grandes sin límite

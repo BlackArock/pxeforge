@@ -28,6 +28,7 @@ export default function Layout() {
         <div className="nav-links">
           <NavLink to="/" end>Dashboard</NavLink>
           <NavLink to="/isos">ISOs</NavLink>
+          <NavLink to="/tools">Tools</NavLink>
           <NavLink to="/boot-menu">Boot Menu</NavLink>
           <NavLink to="/clients">Clients</NavLink>
           <NavLink to="/backups">Backups</NavLink>
